@@ -2,8 +2,9 @@ FROM python:3.10-alpine
 
 WORKDIR /app
 
-# Instalamos las dependencias directamente
-RUN pip install mysql-connector-python pika
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY main.py .
 

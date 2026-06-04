@@ -5,10 +5,10 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>uni</groupId>
-  <artifactId>nodo-java</artifactId>
+  <artifactId>nodo-correo</artifactId>
   <version>1.0-SNAPSHOT</version>
 
-  <name>nodo-java</name>
+  <name>nodo-correo</name>
   <!-- FIXME change it to the project's website -->
   <url>http://www.example.com</url>
 

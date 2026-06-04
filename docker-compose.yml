@@ -16,6 +16,12 @@ services:
       - ./init-scripts/mysql-init.sql:/docker-entrypoint-initdb.d/init.sql
     tmpfs:
       - /var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   # BD2: PostgreSQL para correos
   postgres-bd2:
@@ -33,6 +39,12 @@ services:
       - ./init-scripts/postgres-init.sql:/docker-entrypoint-initdb.d/init.sql
     tmpfs:
       - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root -d bd2_correo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   # BD3: MariaDB para usuarios, cuentas y préstamos
   mariadb-bd3:
@@ -52,6 +64,12 @@ services:
       - ./init-scripts/mariadb-init.sql:/docker-entrypoint-initdb.d/init.sql
     tmpfs:
       - /var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   # Middleware: RabbitMQ con panel de administración
   rabbitmq:
@@ -63,30 +81,51 @@ services:
     ports:
       - "5672:5672"   # Puerto para comunicación AMQP
       - "15672:15672" # Panel de control web
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_port_listener", "5672"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s # Le damos 40 segundos de pura gracia para que despierte con calma
 
-  # NODO 1: Python (Alpine Linux)
-  nodo-python:
+  # NODO TEXTO (Gestión de BD1 con Python)
+  nodo-texto:
     build:
-      context: ./nodo-python
-    container_name: app-nodo-python
+      context: ./nodo-texto
+    container_name: app-nodo-texto
     depends_on:
-      - mysql-bd1
-      - rabbitmq
+      mysql-bd1:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
 
-  # NODO 2: Java (Ubuntu/Jammy)
-  nodo-java:
+  # NODO CORREO (Gestión de BD2 con Java)
+  nodo-correo:
     build:
-      context: ./nodo-java
-    container_name: app-nodo-java
+      context: ./nodo-correo
+    container_name: app-nodo-correo
     depends_on:
-      - postgres-bd2
-      - rabbitmq
+      postgres-bd2:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
 
-  # NODO 3: Node.js (Debian)
-  nodo-node:
+  # NODO PRÉSTAMO (Gestión de BD3 con Node.js)
+  nodo-prestamo:
     build:
-      context: ./nodo-node
-    container_name: app-nodo-node
+      context: ./nodo-prestamo
+    container_name: app-nodo-prestamo
     depends_on:
-      - mariadb-bd3
-      - rabbitmq
+      mariadb-bd3:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  # NODO IA (Node.js)
+  nodo-ia:
+    build:
+      context: ./nodo-ia
+    container_name: app-nodo-ia
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
