@@ -1,0 +1,92 @@
+services:
+  # BD1: MySQL para mensajes de texto
+  mysql-bd1:
+    image: mysql:8.0
+    container_name: mysql-bd1-texto
+    command: 
+      - --skip-log-bin
+      - --innodb_flush_log_at_trx_commit=2
+      - --innodb_doublewrite=0
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: bd1_texto
+    ports:
+      - "3308:3306"
+    volumes:
+      - ./init-scripts/mysql-init.sql:/docker-entrypoint-initdb.d/init.sql
+    tmpfs:
+      - /var/lib/mysql
+
+  # BD2: PostgreSQL para correos
+  postgres-bd2:
+    image: postgres:15
+    container_name: postgres-bd2-correo
+    # Apagamos las confirmaciones estrictas de disco para acelerar el inicio
+    command: postgres -c fsync=off -c full_page_writes=off -c synchronous_commit=off
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: rootpassword
+      POSTGRES_DB: bd2_correo
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./init-scripts/postgres-init.sql:/docker-entrypoint-initdb.d/init.sql
+    tmpfs:
+      - /var/lib/postgresql/data
+
+  # BD3: MariaDB para usuarios, cuentas y préstamos
+  mariadb-bd3:
+    image: mariadb:10.11
+    container_name: mariadb-bd3-prestamos
+    # Desactivamos logs binarios y relajamos la escritura en InnoDB
+    command: 
+      - --skip-log-bin
+      - --innodb_flush_log_at_trx_commit=2
+      - --innodb_doublewrite=0
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpassword
+      MARIADB_DATABASE: bd3_prestamos
+    ports:
+      - "3307:3306" # Mapeado al 3307 en el host
+    volumes:
+      - ./init-scripts/mariadb-init.sql:/docker-entrypoint-initdb.d/init.sql
+    tmpfs:
+      - /var/lib/mysql
+
+  # Middleware: RabbitMQ con panel de administración
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq-middleware
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: adminpassword
+    ports:
+      - "5672:5672"   # Puerto para comunicación AMQP
+      - "15672:15672" # Panel de control web
+
+  # NODO 1: Python (Alpine Linux)
+  nodo-python:
+    build:
+      context: ./nodo-python
+    container_name: app-nodo-python
+    depends_on:
+      - mysql-bd1
+      - rabbitmq
+
+  # NODO 2: Java (Ubuntu/Jammy)
+  nodo-java:
+    build:
+      context: ./nodo-java
+    container_name: app-nodo-java
+    depends_on:
+      - postgres-bd2
+      - rabbitmq
+
+  # NODO 3: Node.js (Debian)
+  nodo-node:
+    build:
+      context: ./nodo-node
+    container_name: app-nodo-node
+    depends_on:
+      - mariadb-bd3
+      - rabbitmq

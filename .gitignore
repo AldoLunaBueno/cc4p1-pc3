@@ -1,0 +1,82 @@
+# =========================
+# Entorno / Sistema Operativo
+# =========================
+# VS Code
+.vscode/*
+
+# Windows / Linux (WSL)
+Thumbs.db
+desktop.ini
+*~
+*.swp
+.DS_Store
+
+# =========================
+# Java / Maven
+# =========================
+# Archivos compilados y empaquetados
+*.class
+*.jar
+*.war
+*.ear
+
+# Directorio de compilación de Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+
+# Logs de JVM
+hs_err_pid*
+replay_pid*
+
+# =========================
+# Node.js
+# =========================
+# Dependencias
+node_modules/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Builds y salidas
+dist/
+build/
+out/
+
+# =========================
+# Python
+# =========================
+# Archivos compilados y optimizados
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Entornos virtuales
+venv/
+.venv/
+env/
+
+# Entornos de testing e informes
+.pytest_cache/
+.coverage
+htmlcov/
+*.log
+
+# =========================
+# Docker y Bases de Datos
+# =========================
+# Variables de entorno (¡CRUCIAL no subir credenciales!)
+.env
+.env.*
+!.env.example
+
+# Volúmenes de persistencia montados en Docker
