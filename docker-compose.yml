@@ -13,7 +13,7 @@ services:
     ports:
       - "3308:3306"
     volumes:
-      - ./init-scripts/mysql-init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./bases_de_datos/mysql-init.sql:/docker-entrypoint-initdb.d/init.sql
     tmpfs:
       - /var/lib/mysql
     healthcheck:
@@ -36,7 +36,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./init-scripts/postgres-init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./bases_de_datos/postgres-init.sql:/docker-entrypoint-initdb.d/init.sql
     tmpfs:
       - /var/lib/postgresql/data
     healthcheck:
@@ -61,7 +61,7 @@ services:
     ports:
       - "3307:3306" # Mapeado al 3307 en el host
     volumes:
-      - ./init-scripts/mariadb-init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./bases_de_datos/mariadb-init.sql:/docker-entrypoint-initdb.d/init.sql
     tmpfs:
       - /var/lib/mysql
     healthcheck:
@@ -91,7 +91,7 @@ services:
   # NODO TEXTO (Gestión de BD1 con Python)
   nodo-texto:
     build:
-      context: ./nodo-texto
+      context: ./codigo_fuente/nodo-texto
     container_name: app-nodo-texto
     depends_on:
       mysql-bd1:
@@ -102,7 +102,7 @@ services:
   # NODO CORREO (Gestión de BD2 con Java)
   nodo-correo:
     build:
-      context: ./nodo-correo
+      context: ./codigo_fuente/nodo-correo
     container_name: app-nodo-correo
     depends_on:
       postgres-bd2:
@@ -113,7 +113,7 @@ services:
   # NODO PRÉSTAMO (Gestión de BD3 con Node.js)
   nodo-prestamo:
     build:
-      context: ./nodo-prestamo
+      context: ./codigo_fuente/nodo-prestamo
     container_name: app-nodo-prestamo
     depends_on:
       mariadb-bd3:
@@ -124,7 +124,7 @@ services:
   # NODO IA (Node.js)
   nodo-ia:
     build:
-      context: ./nodo-ia
+      context: ./codigo_fuente/nodo-ia
     container_name: app-nodo-ia
     depends_on:
       rabbitmq:
